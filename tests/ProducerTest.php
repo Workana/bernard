@@ -57,6 +57,18 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
 
     public function testItUsesGivenQueueName()
     {
+        $message = new DefaultMessage('SendNewsletter');
+
+        $this->producer->produce($message, null, 10);
+
+        $envelope = $this->queues->create('send-newsletter')->dequeue();
+
+        $this->assertTrue($envelope->isDelayed());
+        $this->assertEquals(10, $envelope->getDelay());
+    }
+
+    public function testItUsesGivenQueueName()
+    {
         $message = new PlainMessage('SendNewsletter');
 
         $this->producer->produce($message, 'something-else');
