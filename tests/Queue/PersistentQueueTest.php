@@ -32,7 +32,7 @@ class PersistentQueueTest extends AbstractQueueTest
      */
     public function testEnqueueDelayedWithNotDelayableDriver()
     {
-        $envelope = new Envelope($this->getMock('Bernard\Message'), 10);
+        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
 
         $queue = $this->createQueue('send-newsletter');
         $queue->enqueue($envelope);
@@ -40,8 +40,8 @@ class PersistentQueueTest extends AbstractQueueTest
 
     public function testEnqueueDelayed()
     {
-        $this->driver = $this->getMock('Bernard\DelayableDriver');
-        $envelope = new Envelope($this->getMock('Bernard\Message'), 10);
+        $this->driver = $this->createMock('Bernard\DelayableDriver');
+        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
 
         $this->serializer->expects($this->once())->method('serialize')->with($this->equalTo($envelope))
             ->will($this->returnValue('serialized message'));

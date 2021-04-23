@@ -2,6 +2,7 @@
 
 namespace Bernard\Tests;
 
+use Bernard\Message\DefaultMessage;
 use Bernard\Message\PlainMessage;
 use Bernard\Envelope;
 

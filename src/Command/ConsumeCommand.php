@@ -62,7 +62,7 @@ class ConsumeCommand extends \Symfony\Component\Console\Command\Command
      */
     protected function getQueue($queue)
     {
-        if (count($queue) > 1) {
+        if (!is_string($queue) && count($queue) > 1) {
             $queues = array_map([$this->queues, 'create'], $queue);
 
             return new RoundRobinQueue($queues);

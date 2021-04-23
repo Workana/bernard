@@ -2,6 +2,7 @@
 
 namespace Bernard\Tests;
 
+use Bernard\Message\DefaultMessage;
 use Bernard\Producer;
 use Bernard\Message\PlainMessage;
 use Bernard\QueueFactory\InMemoryFactory;
@@ -65,16 +66,5 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
 
         $this->assertTrue($envelope->isDelayed());
         $this->assertEquals(10, $envelope->getDelay());
-    }
-
-    public function testItUsesGivenQueueName()
-    {
-        $message = new PlainMessage('SendNewsletter');
-
-        $this->producer->produce($message, 'something-else');
-
-        $envelope = $this->queues->create('something-else')->dequeue();
-
-        $this->assertSame($message, $envelope->getMessage());
     }
 }

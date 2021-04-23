@@ -3,8 +3,9 @@ namespace Bernard\Tests\Driver\Delayable;
 
 use Bernard\Driver\Delayable\DelayablePheanstalkDriver;
 use Pheanstalk\PheanstalkInterface;
+use PHPUnit\Framework\TestCase;
 
-class DelayablePheanstalkDriverTest extends \PHPUnit_Framework_TestCase
+class DelayablePheanstalkDriverTest extends TestCase
 {
     public function setUp()
     {
