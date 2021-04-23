@@ -1,4 +1,4 @@
-name: Tests
+name: PHP Composer
 
 on:
   push:
@@ -7,7 +7,9 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
     - name: Cache Composer packages
@@ -20,9 +22,7 @@ jobs:
           ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: |
-        composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
-        composer install --prefer-dist --no-progress --ignore-platform-req=php
+      run: composer install --prefer-dist --no-progress
 
     - name: Run test suite
-      run: vendor/bin/phpunit
+      run: composer run-script test
