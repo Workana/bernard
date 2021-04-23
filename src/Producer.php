@@ -35,6 +35,6 @@ class Producer
         $queue = $this->queues->create($queueName);
         $queue->enqueue($envelope = new Envelope($message, $delay));
 
-        $this->dispatcher->dispatch(BernardEvents::PRODUCE, new EnvelopeEvent($envelope, $queue));
+        $this->dispatcher->dispatch(new EnvelopeEvent($envelope, $queue), BernardEvents::PRODUCE);
     }
 }
