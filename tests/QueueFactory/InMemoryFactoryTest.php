@@ -6,6 +6,8 @@ use Bernard\QueueFactory\InMemoryFactory;
 
 class InMemoryFactoryTest extends \PHPUnit\Framework\TestCase
 {
+    private $factory;
+
     public function setUp()
     {
         $this->factory = new InMemoryFactory();

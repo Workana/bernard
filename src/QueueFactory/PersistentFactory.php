@@ -67,7 +67,11 @@ class PersistentFactory implements \Bernard\QueueFactory
      */
     public function count()
     {
-        return count($this->driver->listQueues());
+        $queues = $this->driver->listQueues();
+        if (null === $queues) {
+            return  0;
+        }
+        return count($queues);
     }
 
     /**

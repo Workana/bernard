@@ -6,6 +6,9 @@ use Bernard\QueueFactory\PersistentFactory;
 
 class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
 {
+    private $factory;
+    private $connection;
+
     public function setUp()
     {
         $this->connection = $this->getMockBuilder('Bernard\Driver')
