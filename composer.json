@@ -9,7 +9,7 @@
     "require": {
         "php": "~5.4|~7.0",
         "bernard/normalt": "~1.0",
-        "symfony/event-dispatcher": "~2.3|~3.0",
+        "symfony/event-dispatcher": "^4.0",
         "beberlei/assert": "~2.1"
     },
     "require-dev" : {
