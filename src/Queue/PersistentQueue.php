@@ -46,7 +46,7 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      */
-    public function count()
+    public function count(): int
     {
         $this->errorIfClosed();
 
