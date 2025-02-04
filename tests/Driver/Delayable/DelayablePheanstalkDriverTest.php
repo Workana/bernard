@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class DelayablePheanstalkDriverTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->pheanstalk = $this->getMockBuilder('Pheanstalk\Pheanstalk')
             ->setMethods(array(
@@ -19,7 +19,7 @@ class DelayablePheanstalkDriverTest extends TestCase
         $this->driver = new DelayablePheanstalkDriver($this->pheanstalk);
     }
 
-    public function testItPushesMessagesWithDelay()
+    public function testItPushesMessagesWithDelay(): void
     {
         $this->pheanstalk
             ->expects($this->once())

@@ -19,14 +19,14 @@ final class EnvelopeTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($message, $envelope->getMessage());
     }
 
-    public function testNotDelayedMetadata()
+    public function testNotDelayedMetadata(): void
     {
         $envelope = new Envelope($message = new PlainMessage('SendNewsletter'));
         $this->assertFalse($envelope->isDelayed());
         $this->assertEquals(0, $envelope->getDelay());
     }
 
-    public function testDelayedMetadata()
+    public function testDelayedMetadata(): void
     {
         $envelope = new Envelope($message = new PlainMessage('SendNewsletter'), 10);
         $this->assertTrue($envelope->isDelayed());
@@ -37,7 +37,7 @@ final class EnvelopeTest extends \PHPUnit\Framework\TestCase
      * @expectedException Bernard\Exception\InvalidOperationException
      * @expectedExceptionMessage Delay must be greater or equal than zero
      */
-    public function testNegativeDelay()
+    public function testNegativeDelay(): void
     {
         $envelope = new Envelope($message = new PlainMessage('SendNewsletter'), -10);
     }

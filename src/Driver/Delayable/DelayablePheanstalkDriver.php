@@ -16,7 +16,7 @@ class DelayablePheanstalkDriver extends PheanstalkDriver implements DelayableDri
     /**
      * {@inheritDoc}
      */
-    public function pushMessageWithDelay($queueName, $message, $delay)
+    public function pushMessageWithDelay($queueName, $message, $delay): void
     {
         $this->pheanstalk->putInTube(
             $queueName,

@@ -79,7 +79,7 @@ class PersistentQueue extends AbstractQueue
         }
     }
 
-    private function assertDriverIsDelayable()
+    private function assertDriverIsDelayable(): void
     {
         if (!($this->driver instanceof DelayableDriver)) {
             throw new InvalidOperationException('This driver can\'t manage delayed messages');
