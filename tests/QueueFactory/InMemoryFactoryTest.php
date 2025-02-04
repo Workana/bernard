@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests;
 
 use Bernard\QueueFactory\InMemoryFactory;
@@ -8,21 +10,20 @@ class InMemoryFactoryTest extends \PHPUnit\Framework\TestCase
 {
     private $factory;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->factory = new InMemoryFactory();
     }
 
-    public function testImplementsQueueFactory()
+    public function testImplementsQueueFactory(): void
     {
         $this->assertInstanceOf('Bernard\QueueFactory', $this->factory);
     }
 
-    /**
-     * @expectedException \Bernard\Exception\InvalidOperationException
-     */
-    public function testRemoveClosesQueue()
+    public function testRemoveClosesQueue(): void
     {
+        $this->expectException(\Bernard\Exception\InvalidOperationException::class);
+
         $queue = $this->factory->create('queue');
 
         $this->assertTrue($this->factory->exists('queue'));
@@ -35,7 +36,7 @@ class InMemoryFactoryTest extends \PHPUnit\Framework\TestCase
         $queue->peek(0, 1);
     }
 
-    public function testItCanCreateQueues()
+    public function testItCanCreateQueues(): void
     {
         $this->assertCount(0, $this->factory);
 

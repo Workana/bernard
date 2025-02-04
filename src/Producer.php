@@ -1,22 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard;
 
 use Bernard\Event\EnvelopeEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-/**
- * @package Bernard
- */
 class Producer
 {
     protected $queues;
     protected $dispatcher;
 
-    /**
-     * @param QueueFactory             $queues
-     * @param EventDispatcherInterface $dispatcher
-     */
     public function __construct(QueueFactory $queues, EventDispatcherInterface $dispatcher)
     {
         $this->queues = $queues;
@@ -24,17 +19,27 @@ class Producer
     }
 
     /**
-     * @param Message     $message
      * @param string|null $queueName
      * @param int         $delay        Delay (in seconds)
      */
-    public function produce(Message $message, $queueName = null, $delay = 0)
+    public function produce(Message $message, $queueName = null, int $delay = 0): void
     {
         $queueName = $queueName ?: Util::guessQueue($message);
 
         $queue = $this->queues->create($queueName);
         $queue->enqueue($envelope = new Envelope($message, $delay));
 
+
         $this->dispatcher->dispatch(new EnvelopeEvent($envelope, $queue), BernardEvents::PRODUCE);
+    }
+
+    private function dispatch($eventName, EnvelopeEvent $event): void
+    {
+        $this->dispatcher->dispatch($event, $eventName);
+
+        // TODO see this shitty if
+//        $this->dispatcher instanceof \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+//           ? $this->dispatcher->dispatch($event, $eventName)
+//           : $this->dispatcher->dispatch($eventName, $event);
     }
 }

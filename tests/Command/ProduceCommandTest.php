@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Command;
 
-use Bernard\Message\PlainMessage;
 use Bernard\Command\ProduceCommand;
+use Bernard\Message\PlainMessage;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class ProduceCommandTest extends \PHPUnit\Framework\TestCase
 {
     protected $producer;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->producer = $this->getMockBuilder('Bernard\Producer')
             ->disableOriginalConstructor()->getMock();
     }
 
-    public function testProduceMessageWithNoArguments()
+    public function testProduceMessageWithNoArguments(): void
     {
         $command = new ProduceCommand($this->producer);
         $message = new PlainMessage('SendNewsletter');
@@ -24,36 +26,35 @@ class ProduceCommandTest extends \PHPUnit\Framework\TestCase
         $this->producer->expects($this->once())->method('produce')->with($this->equalTo($message));
 
         $tester = new CommandTester($command);
-        $tester->execute(array(
-            'name' => 'SendNewsletter'
-        ));
+        $tester->execute([
+            'name' => 'SendNewsletter',
+        ]);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testInvalidJsonThrowsException()
+    public function testInvalidJsonThrowsException(): void
     {
+        $this->expectException(\RuntimeException::class);
+
         $command = new ProduceCommand($this->producer);
 
         $tester = new CommandTester($command);
-        $tester->execute(array(
-            'name'    => 'SendNewsletter',
-            'message' => '{@*^#"foo":"bar"}'
-        ));
+        $tester->execute([
+            'name' => 'SendNewsletter',
+            'message' => '{@*^#"foo":"bar"}',
+        ]);
     }
 
-    public function testItProducesMessageWithData()
+    public function testItProducesMessageWithData(): void
     {
         $command = new ProduceCommand($this->producer);
-        $message = new PlainMessage('SendNewsletter', array('foo' => 'bar'));
+        $message = new PlainMessage('SendNewsletter', ['foo' => 'bar']);
 
         $this->producer->expects($this->once())->method('produce')->with($this->equalTo($message));
 
         $tester = new CommandTester($command);
-        $tester->execute(array(
-            'name'    => 'SendNewsletter',
-            'message' => '{"foo":"bar"}'
-        ));
+        $tester->execute([
+            'name' => 'SendNewsletter',
+            'message' => '{"foo":"bar"}',
+        ]);
     }
 }

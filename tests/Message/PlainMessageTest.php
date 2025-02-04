@@ -1,42 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Message;
 
 use Bernard\Message\PlainMessage;
 
-class PlainMessageTest extends \PHPUnit\Framework\TestCase
+final class PlainMessageTest extends \PHPUnit\Framework\TestCase
 {
-    public function testItHaveAName()
+    public function testItHasArguments(): void
     {
-        $message = $this->createMessage('SendNewsletter');
-
-        $this->assertEquals('SendNewsletter', $message->getName());
-    }
-
-    public function testItHasArguments()
-    {
-        $message = $this->createMessage('SendNewsletter', array(
+        $message = new PlainMessage('SendNewsletter', [
             'key1' => 1,
-            'key2' => array(1,2,3,4),
+            'key2' => [1, 2, 3, 4],
             'key3' => null,
-        ));
+        ]);
 
-        $this->assertTrue(isset($message['key1']));
-        $this->assertTrue(isset($message['key1']));
+        $this->assertArrayHasKey('key1', $message);
 
         $this->assertEquals(1, $message['key1']);
-        $this->assertEquals(array(1,2,3,4), $message['key2']);
-        $this->assertInternalType('null', $message['key3']);
+        $this->assertEquals([1, 2, 3, 4], $message['key2']);
+        $this->assertNull($message['key3']);
 
+        $this->assertTrue(isset($message->key1));
+
+        $this->assertEquals(1, $message->key1);
+        $this->assertEquals([1, 2, 3, 4], $message->key2);
+        $this->assertNull($message->key3);
     }
 
-    public function testItImplementsArrayAccess()
+    public function testItImplementsArrayAccess(): void
     {
-        $this->assertInstanceOf('ArrayAccess', $this->createMessage('SendNewsletter'));
+        $this->assertInstanceOf(\ArrayAccess::class, new PlainMessage('SendNewsletter'));
     }
 
-    protected function createMessage($name, array $data = [])
+    public function testItIsImmutableToMagicSet(): void
     {
-        return new PlainMessage($name, $data);
+        $this->expectException(\LogicException::class);
+
+        $message = new PlainMessage('SendNewsletter');
+        $message->key1 = 1;
+    }
+
+    public function testItIsImmutableToMagicUnset(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        $message = new PlainMessage('SendNewsletter', ['key1' => 1]);
+        unset($message->key1);
+    }
+
+    public function testItIsImmutableToOffsetSet(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        $message = new PlainMessage('SendNewsletter');
+        $message['key1'] = 1;
+    }
+
+    public function testItIsImmutableToOffsetUnset(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        $message = new PlainMessage('SendNewsletter', ['key1' => 1]);
+        unset($message['key1']);
     }
 }

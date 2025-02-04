@@ -1,24 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Event;
 
+use Bernard\Envelope;
 use Bernard\Event\EnvelopeEvent;
+use Bernard\Message;
 
 class EnvelopeEventTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->envelope = $this->getMockBuilder('Bernard\Envelope')->disableOriginalConstructor()
+        $message = $this->getMockBuilder(Message::class)->disableOriginalConstructor()
             ->getMock();
+        $this->envelope = new Envelope($message);
         $this->queue = $this->createMock('Bernard\Queue');
     }
 
-    public function testIsEvent()
+    public function testIsEvent(): void
     {
         $this->assertInstanceOf('Symfony\Component\EventDispatcher\Event', new EnvelopeEvent($this->envelope, $this->queue));
     }
 
-    public function hasEnvelopeAndQueue()
+    public function hasEnvelopeAndQueue(): void
     {
         $event = new EnvelopeEvent($this->envelope, $this->queue);
 

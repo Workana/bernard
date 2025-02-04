@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Queue;
 
 use Bernard\Envelope;
@@ -7,7 +9,7 @@ use Bernard\Queue\InMemoryQueue;
 
 class InMemoryQueueTest extends AbstractQueueTest
 {
-    public function testDequeue()
+    public function testDequeue(): void
     {
         $envelope = new Envelope($this->createMock('Bernard\Message'));
 
@@ -17,25 +19,25 @@ class InMemoryQueueTest extends AbstractQueueTest
         $this->assertCount(1, $queue);
         $this->assertSame($envelope, $queue->dequeue());
         $this->assertCount(0, $queue);
-        $this->assertInternalType('null', $queue->dequeue());
+        $this->assertNull($queue->dequeue());
     }
 
-    public function testPeek()
+    public function testPeek(): void
     {
         $queue = new InMemoryQueue('send-newsletter');
 
-        $this->assertEquals(array(), $queue->peek(0, 10));
+        $this->assertEquals([], $queue->peek(0, 10));
 
-        $queue->enqueue($envelope  = $this->getEnvelope());
+        $queue->enqueue($envelope = $this->getEnvelope());
         $queue->enqueue($envelope1 = $this->getEnvelope());
         $queue->enqueue($envelope2 = $this->getEnvelope());
         $queue->enqueue($envelope3 = $this->getEnvelope());
 
         $this->assertCount(4, $queue);
-        $this->assertSame(array(
+        $this->assertSame([
             $envelope1,
             $envelope2,
-        ), $queue->peek(1, 2));
+        ], $queue->peek(1, 2));
         $this->assertCount(4, $queue);
     }
 

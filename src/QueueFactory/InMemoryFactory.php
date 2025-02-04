@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\QueueFactory;
 
 use Bernard\Queue\InMemoryQueue;
 
 /**
  * This is an in memory queue factory. It creates SplQueue objects for the
- * queue. This also means it is not possible to introspect with Juno
- *
- * @package Bernard
+ * queue. This also means it is not possible to introspect with Juno.
  */
 class InMemoryFactory implements \Bernard\QueueFactory
 {
@@ -37,9 +37,10 @@ class InMemoryFactory implements \Bernard\QueueFactory
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
-        return count($this->queues);
+        return \count($this->queues);
     }
 
     /**
@@ -53,7 +54,7 @@ class InMemoryFactory implements \Bernard\QueueFactory
     /**
      * {@inheritdoc}
      */
-    public function remove($queueName)
+    public function remove($queueName): void
     {
         if ($this->exists($queueName)) {
             $this->queues[$queueName]->close();

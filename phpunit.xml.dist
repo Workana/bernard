@@ -1,25 +1,16 @@
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="false"
-         bootstrap="vendor/autoload.php">
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" backupGlobals="false" colors="true" bootstrap="vendor/autoload.php">
+    <coverage>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </coverage>
 
     <testsuites>
-        <testsuite name="Bernard TestSuite">
+        <testsuite name="Bernard Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
-
-    <filter>
-        <whitelist addUncoveredFilesFromWhitelist="true" processUncoveredFilesFromWhitelist="false">
-            <directory suffix=".php">./src</directory>
-        </whitelist>
-    </filter>
 
     <groups>
         <exclude>

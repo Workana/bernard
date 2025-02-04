@@ -1,20 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests;
 
 use Bernard\Consumer;
-use Bernard\Queue\InMemoryQueue;
 use Bernard\Envelope;
-use Bernard\Message\PlainMessage;
-use Bernard\Router\SimpleRouter;
-use Bernard\Event\RejectEnvelopeEvent;
 use Bernard\Event\EnvelopeEvent;
 use Bernard\Event\PingEvent;
+use Bernard\Event\RejectEnvelopeEvent;
+use Bernard\Exception\ReceiverNotFoundException;
+use Bernard\Message\PlainMessage;
+use Bernard\Queue\InMemoryQueue;
+use Bernard\Receiver;
+use Bernard\Router;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class ConsumerTest extends \PHPUnit\Framework\TestCase
 {
+    use \Prophecy\PhpUnit\ProphecyTrait;
+
     /**
-     * @var SimpleRouter
+     * @var Router|ObjectProphecy
      */
     private $router;
 
@@ -28,21 +35,27 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
      */
     private $consumer;
 
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->router = new SimpleRouter;
-        $this->router->add('ImportUsers', new Fixtures\Service);
+        $this->router = $this->prophesize(Router::class);
 
         $this->dispatcher = $this->createMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
-        $this->consumer = new Consumer($this->router, $this->dispatcher);
+
+        $this->consumer = new Consumer($this->router->reveal(), $this->dispatcher);
     }
 
-    public function testEmitsConsumeEvent()
+    public function testEmitsConsumeEvent(): void
     {
-        $envelope = new Envelope(new PlainMessage('ImportUsers'));
+        $envelope = new Envelope($message = new PlainMessage('ImportUsers'));
+
         $queue = $this->getMockBuilder('Bernard\Queue\InMemoryQueue')->setMethods([
-            'dequeue'
+            'dequeue',
         ])->setConstructorArgs(['queue'])->getMock();
+
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->shouldBeCalled();
+        $this->router->route($envelope)->willReturn($receiver);
 
         $queue->expects($this->once())
             ->method('dequeue')
@@ -60,16 +73,17 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($this->consumer->tick($queue));
     }
 
-    public function testEmitsExceptionEvent()
+    public function testEmitsExceptionEvent(): void
     {
         $exception = new \InvalidArgumentException();
 
-        $this->router->add('ImportUsers', function () use ($exception) {
-            throw $exception;
-        });
-
-        $envelope = new Envelope(new PlainMessage('ImportUsers'));
+        $envelope = new Envelope($message = new PlainMessage('ImportUsers'));
         $queue = new InMemoryQueue('queue');
+
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->willThrow($exception);
+        $this->router->route($envelope)->willReturn($receiver);
 
         $this->dispatcher->expects($this->at(1))->method('dispatch')
             ->with(new RejectEnvelopeEvent($envelope, $queue, $exception), 'bernard.reject');
@@ -77,7 +91,7 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
         $this->consumer->invoke($envelope, $queue);
     }
 
-    public function testShutdown()
+    public function testShutdown(): void
     {
         $queue = new InMemoryQueue('queue');
 
@@ -86,95 +100,115 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($this->consumer->tick($queue));
     }
 
-    public function testPauseResume()
+    public function testPauseResume(): void
     {
-        $service = new Fixtures\Service();
-
-        $this->router->add('ImportUsers', $service);
-
+        $envelope = new Envelope($message = new PlainMessage('ImportUsers'));
         $queue = new InMemoryQueue('queue');
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
+        $queue->enqueue($envelope);
+
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->shouldBeCalled();
+        $this->router->route($envelope)->willReturn($receiver);
 
         $this->consumer->pause();
 
         $this->assertTrue($this->consumer->tick($queue));
-        $this->assertFalse($service->importUsers);
 
         $this->consumer->resume();
 
         $this->assertTrue($this->consumer->tick($queue));
-        $this->assertTrue($service->importUsers);
     }
 
-    public function testMaxRuntime()
+    public function testMaxRuntime(): void
     {
         $queue = new InMemoryQueue('queue');
 
-        $this->assertFalse($this->consumer->tick($queue, array(
-            'max-runtime' => -1 * PHP_INT_MAX,
-        )));
+        $this->assertFalse($this->consumer->tick($queue, [
+            'max-runtime' => -1 * \PHP_INT_MAX,
+        ]));
     }
 
-    public function testNoEnvelopeInQueue()
+    public function testNoEnvelopeInQueue(): void
     {
         $queue = new InMemoryQueue('queue');
         $this->assertTrue($this->consumer->tick($queue));
     }
 
-    public function testEnvelopeIsAcknowledged()
+    public function testEnvelopeIsAcknowledged(): void
     {
-        $service = new Fixtures\Service();
-        $envelope = new Envelope(new PlainMessage('ImportUsers'));
+        $envelope = new Envelope($message = new PlainMessage('ImportUsers'));
 
-        $this->router->add('ImportUsers', $service);
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->shouldBeCalled();
+        $this->router->route($envelope)->willReturn($receiver);
 
         $queue = $this->createMock('Bernard\Queue');
-        $queue->expects($this->once())->method('dequeue')->will($this->returnValue($envelope));
+        $queue->expects($this->once())->method('dequeue')->willReturn($envelope);
         $queue->expects($this->once())->method('acknowledge')->with($this->equalTo($envelope));
 
         $this->consumer->tick($queue);
-
-        $this->assertTrue($service->importUsers);
     }
 
-    public function testMaxMessages()
+    public function testMaxMessages(): void
     {
-        $this->router->add('ImportUsers', new Fixtures\Service);
+        $envelope1 = new Envelope($message1 = new PlainMessage('ImportUsers'));
+        $envelope2 = new Envelope($message2 = new PlainMessage('ImportUsers'));
+        $envelope3 = new Envelope($message3 = new PlainMessage('ImportUsers'));
 
         $queue = new InMemoryQueue('send-newsletter');
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
+        $queue->enqueue($envelope1);
+        $queue->enqueue($envelope2);
+        $queue->enqueue($envelope3);
 
-        $this->assertFalse($this->consumer->tick($queue, array('max-messages' => 1)));
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message1)->shouldBeCalled();
+        $receiver->receive($message2)->shouldBeCalled();
+        $receiver->receive($message3)->shouldBeCalled();
+        $this->router->route($envelope1)->willReturn($receiver);
+        $this->router->route($envelope2)->willReturn($receiver);
+        $this->router->route($envelope3)->willReturn($receiver);
+
+        $this->assertFalse($this->consumer->tick($queue, ['max-messages' => 1]));
         $this->assertTrue($this->consumer->tick($queue));
-        $this->assertTrue($this->consumer->tick($queue, array('max-messages' => 100)));
+        $this->assertTrue($this->consumer->tick($queue, ['max-messages' => 100]));
     }
 
-    public function testStopAfterLastMessage()
+    public function testStopAfterLastMessage(): void
     {
-        $this->router->add('ImportUsers', new Fixtures\Service);
+        $envelope1 = new Envelope($message1 = new PlainMessage('ImportUsers'));
+        $envelope2 = new Envelope($message2 = new PlainMessage('ImportUsers'));
 
         $queue = new InMemoryQueue('send-newsletter');
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
+        $queue->enqueue($envelope1);
+        $queue->enqueue($envelope2);
 
-        $this->assertTrue($this->consumer->tick($queue, array('stop-when-empty' => true)));
-        $this->assertTrue($this->consumer->tick($queue, array('stop-when-empty' => true)));
-        $this->assertFalse($this->consumer->tick($queue, array('stop-when-empty' => true)));
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message1)->shouldBeCalled();
+        $receiver->receive($message2)->shouldBeCalled();
+        $this->router->route($envelope1)->willReturn($receiver);
+        $this->router->route($envelope2)->willReturn($receiver);
+
+        $this->assertTrue($this->consumer->tick($queue, ['stop-when-empty' => true]));
+        $this->assertTrue($this->consumer->tick($queue, ['stop-when-empty' => true]));
+        $this->assertFalse($this->consumer->tick($queue, ['stop-when-empty' => true]));
     }
 
-    /**
-     * @expectedException \Bernard\Exception\ReceiverNotFoundException
-     */
-    public function testStopOnError()
+    public function testStopOnError(): void
     {
-        $this->router->add('ImportUsers', new Fixtures\Service);
+        $this->expectException(\Bernard\Exception\ReceiverNotFoundException::class);
+
+        $envelope = new Envelope($message = new PlainMessage('DifferentMessageKey'));
 
         $queue = new InMemoryQueue('send-newsletter');
-        $queue->enqueue(new Envelope(new PlainMessage('DifferentMessageKey')));
+        $queue->enqueue($envelope);
 
-        $this->consumer->tick($queue, array('stop-on-error' => true));
+        $this->router->route($envelope)->willThrow(ReceiverNotFoundException::class);
+
+        $this->consumer->tick($queue, ['stop-on-error' => true]);
 
         $this->assertEquals(1, $queue->count());
     }
@@ -182,30 +216,37 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
     /**
      * @group debug
      */
-    public function testEnvelopeWillBeInvoked()
+    public function testEnvelopeWillBeInvoked(): void
     {
-        $service = new Fixtures\Service();
-
-        $this->router->add('ImportUsers', $service);
+        $envelope = new Envelope($message = new PlainMessage('ImportUsers'));
 
         $queue = new InMemoryQueue('send-newsletter');
-        $queue->enqueue(new Envelope(new PlainMessage('ImportUsers')));
+        $queue->enqueue($envelope);
+
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->shouldBeCalled();
+        $this->router->route($envelope)->willReturn($receiver);
 
         $this->consumer->tick($queue);
-
-        $this->assertTrue($service->importUsers);
     }
 
     /**
      * @requires PHP 7.0
-     * @expectedException \TypeError
      */
-    public function testWillRejectDispatchOnThrowableError()
+    public function testWillRejectDispatchOnThrowableError(): void
     {
-        $this->router->add('ImportReport', new Fixtures\Service);
+        $this->expectException(\TypeError::class);
+
+        $envelope = new Envelope($message = new PlainMessage('ImportReport'));
 
         $queue = new InMemoryQueue('send-newsletter');
-        $queue->enqueue(new Envelope(new PlainMessage('ImportReport')));
+        $queue->enqueue($envelope);
+
+        /** @var Receiver|ObjectProphecy $receiver */
+        $receiver = $this->prophesize(Receiver::class);
+        $receiver->receive($message)->willThrow(\TypeError::class);
+        $this->router->route($envelope)->willReturn($receiver);
 
         $this->dispatcher->expects(self::at(0))->method('dispatch')->with($this->isInstanceOf(PingEvent::class), 'bernard.ping');
         $this->dispatcher->expects(self::at(1))->method('dispatch')->with($this->isInstanceOf(EnvelopeEvent::class) , 'bernard.invoke');

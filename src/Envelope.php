@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard;
 
 use Bernard\Exception\InvalidOperationException;
@@ -7,29 +9,24 @@ use Bernard\Exception\InvalidOperationException;
 /**
  * Wraps a Message with metadata that can be used for automatic retry
  * or inspection.
- *
- * @package Bernard
  */
-class Envelope
+final class Envelope
 {
-    protected $message;
-    protected $class;
-    protected $timestamp;
-    protected $delay;
+    private $message;
+    private $class;
+    private $timestamp;
 
-    /**
-     * @param Message   $message
-     * @param int       $delay      Delay (in seconds)
-     */
-    public function __construct(Message $message, $delay = 0)
+    private int $delay;
+
+    public function __construct(Message $message, int $delay = 0)
     {
         if ((int) $delay < 0) {
             throw new InvalidOperationException('Delay must be greater or equal than zero');
         }
 
         $this->message = $message;
-        $this->delay  = (int) $delay;
-        $this->class = get_class($message);
+        $this->delay  = $delay;
+        $this->class = $message::class;
         $this->timestamp = time();
     }
 
