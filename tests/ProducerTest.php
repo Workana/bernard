@@ -58,7 +58,7 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
 
     public function testWithDelay()
     {
-        $message = new DefaultMessage('SendNewsletter');
+        $message = new PlainMessage('SendNewsletter');
 
         $this->producer->produce($message, null, 10);
 

@@ -26,7 +26,7 @@ final class Envelope
 
         $this->message = $message;
         $this->delay  = $delay;
-        $this->class = $message::class;
+        $this->class = get_class($message);
         $this->timestamp = time();
     }
 

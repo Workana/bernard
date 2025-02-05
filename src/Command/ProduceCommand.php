@@ -37,7 +37,7 @@ class ProduceCommand extends \Symfony\Component\Console\Command\Command
     /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output): void
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('name');
         $queue = $input->getOption('queue');
@@ -52,5 +52,7 @@ class ProduceCommand extends \Symfony\Component\Console\Command\Command
         }
 
         $this->producer->produce(new PlainMessage($name, $message), $queue);
+
+        return self::SUCCESS;
     }
 }

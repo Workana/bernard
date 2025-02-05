@@ -14,11 +14,12 @@ use Bernard\Message\PlainMessage;
 use Bernard\Queue\InMemoryQueue;
 use Bernard\Receiver;
 use Bernard\Router;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 class ConsumerTest extends \PHPUnit\Framework\TestCase
 {
-    use \Prophecy\PhpUnit\ProphecyTrait;
+    use ProphecyTrait;
 
     /**
      * @var Router|ObjectProphecy

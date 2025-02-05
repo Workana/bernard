@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bernard\Tests\Queue;
 
 use Bernard\Envelope;
+use Bernard\Exception\InvalidOperationException;
 use Bernard\Queue\PersistentQueue;
 
 class PersistentQueueTest extends AbstractQueueTest
@@ -123,12 +124,11 @@ class PersistentQueueTest extends AbstractQueueTest
         return new PersistentQueue($name, $this->driver, $this->serializer);
     }
 
-    /**
-     * @expectedException Bernard\Exception\InvalidOperationException
-     * @expectedExceptionMessage This driver can't manage delayed messages
-     */
     public function testEnqueueDelayedWithNotDelayableDriver(): void
     {
+        $this->expectException(InvalidOperationException::class);
+        $this->expectExceptionMessage('This driver can\'t manage delayed messages');
+
         $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
 
         $queue = $this->createQueue('send-newsletter');

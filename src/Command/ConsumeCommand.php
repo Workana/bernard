@@ -43,11 +43,13 @@ class ConsumeCommand extends \Symfony\Component\Console\Command\Command
     /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output): void
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $queue = $this->getQueue($input->getArgument('queue'));
 
         $this->consumer->consume($queue, $input->getOptions());
+
+        return self::SUCCESS;
     }
 
     /**

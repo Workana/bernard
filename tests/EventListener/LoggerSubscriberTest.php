@@ -7,11 +7,12 @@ namespace Bernard\Tests\EventListener;
 use Bernard\Event\EnvelopeEvent;
 use Bernard\Event\RejectEnvelopeEvent;
 use Bernard\EventListener\LoggerSubscriber;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 
 class LoggerSubscriberTest extends \PHPUnit\Framework\TestCase
 {
-    use \Prophecy\PhpUnit\ProphecyTrait;
+    use ProphecyTrait;
 
     public function testLogsInfoOnProduce(): void
     {

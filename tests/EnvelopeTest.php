@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bernard\Tests;
 
+use Bernard\Exception\InvalidOperationException;
 use Bernard\Message\PlainMessage;
 use Bernard\Envelope;
 
@@ -33,12 +34,11 @@ final class EnvelopeTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(10, $envelope->getDelay());
     }
 
-    /**
-     * @expectedException Bernard\Exception\InvalidOperationException
-     * @expectedExceptionMessage Delay must be greater or equal than zero
-     */
     public function testNegativeDelay(): void
     {
-        $envelope = new Envelope($message = new PlainMessage('SendNewsletter'), -10);
+        $this->expectException(InvalidOperationException::class);
+        $this->expectExceptionMessage('Delay must be greater or equal than zero');
+
+        new Envelope(new PlainMessage('SendNewsletter'), -10);
     }
 }

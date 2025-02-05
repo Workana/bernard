@@ -9,7 +9,7 @@ class DelayablePheanstalkDriverTest extends TestCase
 {
     public function setUp(): void
     {
-        $this->pheanstalk = $this->getMockBuilder('Pheanstalk\Pheanstalk')
+        $this->pheanstalk = $this->getMockBuilder('Pheanstalk\PheanstalkInterface')
             ->setMethods(array(
                 'putInTube'
             ))
@@ -27,7 +27,7 @@ class DelayablePheanstalkDriverTest extends TestCase
             ->with(
                 $this->equalTo('my-queue'),
                 $this->equalTo('This is a message'),
-                $this->equalTo(PheanstalkInterface::DEFAULT_PRIORITY),
+                $this->equalTo(DelayablePheanstalkDriver::DEFAULT_PRIORITY),
                 $this->equalTo(10)
             );
 

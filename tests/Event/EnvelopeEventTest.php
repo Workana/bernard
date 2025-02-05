@@ -7,6 +7,7 @@ namespace Bernard\Tests\Event;
 use Bernard\Envelope;
 use Bernard\Event\EnvelopeEvent;
 use Bernard\Message;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class EnvelopeEventTest extends \PHPUnit\Framework\TestCase
 {
@@ -20,7 +21,7 @@ class EnvelopeEventTest extends \PHPUnit\Framework\TestCase
 
     public function testIsEvent(): void
     {
-        $this->assertInstanceOf('Symfony\Component\EventDispatcher\Event', new EnvelopeEvent($this->envelope, $this->queue));
+        $this->assertInstanceOf(Event::class, new EnvelopeEvent($this->envelope, $this->queue));
     }
 
     public function hasEnvelopeAndQueue(): void

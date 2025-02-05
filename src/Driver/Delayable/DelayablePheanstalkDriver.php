@@ -13,6 +13,8 @@ use Pheanstalk\PheanstalkInterface;
  */
 class DelayablePheanstalkDriver extends Pheanstalk\Driver implements DelayableDriver
 {
+    public const DEFAULT_PRIORITY = 1024; // most urgent: 0, least urgent: 4294967295
+
     /**
      * {@inheritDoc}
      */
@@ -21,7 +23,7 @@ class DelayablePheanstalkDriver extends Pheanstalk\Driver implements DelayableDr
         $this->pheanstalk->putInTube(
             $queueName,
             $message,
-            PheanstalkInterface::DEFAULT_PRIORITY,
+            self::DEFAULT_PRIORITY,
             (int) $delay
         );
     }

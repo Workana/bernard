@@ -6,10 +6,11 @@ namespace Bernard\Tests\Driver\Doctrine;
 
 use Bernard\Driver\Doctrine\ConnectionListener;
 use Doctrine\DBAL\DBALException;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ConnectionListenerTest extends \PHPUnit\Framework\TestCase
 {
-    use \Prophecy\PhpUnit\ProphecyTrait;
+    use ProphecyTrait;
 
     protected function setUp(): void
     {
