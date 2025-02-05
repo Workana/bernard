@@ -1,7 +1,7 @@
 <?php
 namespace Bernard\Driver\Delayable;
 
-use Bernard\Driver\PheanstalkDriver;
+use Bernard\Driver\Pheanstalk;
 use Bernard\DelayableDriver;
 use Pheanstalk\PheanstalkInterface;
 
@@ -11,7 +11,7 @@ use Pheanstalk\PheanstalkInterface;
  * @package Bernard
  * @author Carlos Frutos <charly@workana.com>
  */
-class DelayablePheanstalkDriver extends PheanstalkDriver implements DelayableDriver
+class DelayablePheanstalkDriver extends Pheanstalk\Driver implements DelayableDriver
 {
     /**
      * {@inheritDoc}

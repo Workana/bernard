@@ -14,5 +14,5 @@ interface DelayableDriver extends Driver
      * @param string    $message
      * @param int       $delay         Delay in seconds
      */
-    public function pushMessageWithDelay($queueName, $message, $delay);
+    public function pushMessageWithDelay($queueName, $message, $delay): void;
 }
