@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Bernard\Queue;
 
-use Bernard\Driver;
 use Bernard\DelayableDriver;
+use Bernard\Driver;
 use Bernard\Envelope;
-use Bernard\Serializer;
 use Bernard\Exception\InvalidOperationException;
+use Bernard\Serializer;
 
 class PersistentQueue extends AbstractQueue
 {

@@ -58,12 +58,9 @@ class PersistentFactory implements \Bernard\QueueFactory
         return isset($this->queues[$queueName]) ?: \in_array($queueName, $this->driver->listQueues());
     }
 
-    /**
-     * @return int
-     */
     public function count(): int
     {
-        return count($this->driver->listQueues());
+        return \count($this->driver->listQueues());
     }
 
     /**

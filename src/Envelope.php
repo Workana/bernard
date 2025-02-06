@@ -26,7 +26,7 @@ final class Envelope
 
         $this->message = $message;
         $this->delay  = $delay;
-        $this->class = get_class($message);
+        $this->class = $message::class;
         $this->timestamp = time();
     }
 
@@ -38,12 +38,9 @@ final class Envelope
         return $this->message;
     }
 
-    /**
-     * @return bool
-     */
-    public function isDelayed()
+    public function isDelayed(): bool
     {
-        return ($this->delay > 0);
+        return $this->delay > 0;
     }
 
     /**

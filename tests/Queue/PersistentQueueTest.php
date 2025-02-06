@@ -141,7 +141,7 @@ class PersistentQueueTest extends AbstractQueueTest
         $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
 
         $this->serializer->expects($this->once())->method('serialize')->with($this->equalTo($envelope))
-            ->will($this->returnValue('serialized message'));
+            ->willReturn($this->returnValue('serialized message'));
         $this->driver->expects($this->once())->method('pushMessageWithDelay')
             ->with($this->equalTo('send-newsletter'), $this->equalTo('serialized message'), $this->equalTo(10));
 

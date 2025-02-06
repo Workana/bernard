@@ -1,18 +1,19 @@
 <?php
+declare(strict_types=1);
+
 namespace Bernard\Tests\Driver\Delayable;
 
 use Bernard\Driver\Delayable\DelayablePheanstalkDriver;
-use Pheanstalk\PheanstalkInterface;
 use PHPUnit\Framework\TestCase;
 
 class DelayablePheanstalkDriverTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->pheanstalk = $this->getMockBuilder('Pheanstalk\PheanstalkInterface')
-            ->setMethods(array(
+            ->setMethods([
                 'putInTube'
-            ))
+            ])
             ->disableOriginalConstructor()
             ->getMock();
 

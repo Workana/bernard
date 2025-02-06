@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Bernard\Tests;
 
+use Bernard\Envelope;
 use Bernard\Exception\InvalidOperationException;
 use Bernard\Message\PlainMessage;
-use Bernard\Envelope;
 
 final class EnvelopeTest extends \PHPUnit\Framework\TestCase
 {

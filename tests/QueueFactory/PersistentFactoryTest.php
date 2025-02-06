@@ -11,7 +11,7 @@ class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
     private $factory;
     private $connection;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->connection = $this->getMockBuilder('Bernard\Driver')
             ->disableOriginalConstructor()->getMock();

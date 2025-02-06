@@ -63,7 +63,7 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
             ->willReturn($envelope);
 
         $this->dispatcher->expects($this->at(0))->method('dispatch')
-            ->with( new PingEvent($queue), 'bernard.ping');
+            ->with(new PingEvent($queue), 'bernard.ping');
 
         $this->dispatcher->expects($this->at(1))->method('dispatch')
             ->with(new EnvelopeEvent($envelope, $queue), 'bernard.invoke');
@@ -250,7 +250,7 @@ class ConsumerTest extends \PHPUnit\Framework\TestCase
         $this->router->route($envelope)->willReturn($receiver);
 
         $this->dispatcher->expects(self::at(0))->method('dispatch')->with($this->isInstanceOf(PingEvent::class), 'bernard.ping');
-        $this->dispatcher->expects(self::at(1))->method('dispatch')->with($this->isInstanceOf(EnvelopeEvent::class) , 'bernard.invoke');
+        $this->dispatcher->expects(self::at(1))->method('dispatch')->with($this->isInstanceOf(EnvelopeEvent::class), 'bernard.invoke');
 
         $this
             ->dispatcher

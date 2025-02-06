@@ -1,12 +1,13 @@
 <?php
+declare(strict_types=1);
+
 namespace Bernard\Driver\Delayable;
 
-use Bernard\Driver\Pheanstalk;
 use Bernard\DelayableDriver;
-use Pheanstalk\PheanstalkInterface;
+use Bernard\Driver\Pheanstalk;
 
 /**
- * Delayable Pheanstalk Driver
+ * Delayable Pheanstalk Driver.
  *
  * @package Bernard
  * @author Carlos Frutos <charly@workana.com>

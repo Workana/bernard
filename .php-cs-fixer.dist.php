@@ -19,3 +19,4 @@ $config = (new PhpCsFixer\Config())
     );
 
 return $config;
+

@@ -56,7 +56,7 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($message, $envelope->getMessage());
     }
 
-    public function testWithDelay()
+    public function testWithDelay(): void
     {
         $message = new PlainMessage('SendNewsletter');
 
