@@ -20,7 +20,7 @@ class Producer
 
     /**
      * @param string|null $queueName
-     * @param int $delay Delay (in seconds)
+     * @param int   $delay  Delay (in seconds)
      */
     public function produce(Message $message, $queueName = null, int $delay = 0): void
     {

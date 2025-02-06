@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Bernard\Tests\Driver\Delayable;
@@ -12,7 +13,7 @@ class DelayablePheanstalkDriverTest extends TestCase
     {
         $this->pheanstalk = $this->getMockBuilder('Pheanstalk\PheanstalkInterface')
             ->setMethods([
-                'putInTube'
+                'putInTube',
             ])
             ->disableOriginalConstructor()
             ->getMock();
