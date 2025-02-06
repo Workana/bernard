@@ -19,8 +19,10 @@ class Producer
     }
 
     /**
+     * Produce a message with optional delay in seconds.
+     *
      * @param string|null $queueName
-     * @param int    $delay    Delay (in seconds)
+     * @param int $delay
      */
     public function produce(Message $message, $queueName = null, int $delay = 0): void
     {
