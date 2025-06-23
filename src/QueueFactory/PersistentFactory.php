@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\QueueFactory;
 
 use Bernard\Driver;
@@ -9,8 +11,6 @@ use Bernard\Serializer;
 /**
  * Knows how to create queues and retrieve them from the used driver.
  * Every queue it creates is saved locally.
- *
- * @package Bernard
  */
 class PersistentFactory implements \Bernard\QueueFactory
 {
@@ -18,10 +18,6 @@ class PersistentFactory implements \Bernard\QueueFactory
     protected $driver;
     protected $serializer;
 
-    /**
-     * @param Driver     $driver
-     * @param Serializer $serializer
-     */
     public function __construct(Driver $driver, Serializer $serializer)
     {
         $this->queues = [];
@@ -59,25 +55,18 @@ class PersistentFactory implements \Bernard\QueueFactory
      */
     public function exists($queueName)
     {
-        return isset($this->queues[$queueName]) ?: in_array($queueName, $this->driver->listQueues());
+        return isset($this->queues[$queueName]) ?: \in_array($queueName, $this->driver->listQueues());
     }
 
-    /**
-     * @return int
-     */
-    public function count()
+    public function count(): int
     {
-        $queues = $this->driver->listQueues();
-        if (null === $queues) {
-            return  0;
-        }
-        return count($queues);
+        return \count($this->driver->listQueues());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function remove($queueName)
+    public function remove($queueName): void
     {
         if (!$this->exists($queueName)) {
             return;

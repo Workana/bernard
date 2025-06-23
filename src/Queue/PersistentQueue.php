@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Queue;
 
-use Bernard\Driver;
 use Bernard\DelayableDriver;
+use Bernard\Driver;
 use Bernard\Envelope;
-use Bernard\Serializer;
 use Bernard\Exception\InvalidOperationException;
+use Bernard\Serializer;
 
-/**
- * @package Bernard
- */
 class PersistentQueue extends AbstractQueue
 {
     protected $driver;
@@ -18,9 +17,7 @@ class PersistentQueue extends AbstractQueue
     protected $receipts;
 
     /**
-     * @param string     $name
-     * @param Driver     $driver
-     * @param Serializer $serializer
+     * @param string $name
      */
     public function __construct($name, Driver $driver, Serializer $serializer)
     {
@@ -34,9 +31,9 @@ class PersistentQueue extends AbstractQueue
     }
 
     /**
-     * Register with the driver
+     * Register with the driver.
      */
-    public function register()
+    public function register(): void
     {
         $this->errorIfClosed();
 
@@ -46,7 +43,7 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      */
-    public function count()
+    public function count(): int
     {
         $this->errorIfClosed();
 
@@ -56,7 +53,7 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      */
-    public function close()
+    public function close(): void
     {
         parent::close();
 
@@ -66,7 +63,7 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      */
-    public function enqueue(Envelope $envelope)
+    public function enqueue(Envelope $envelope): void
     {
         $this->errorIfClosed();
 
@@ -82,7 +79,7 @@ class PersistentQueue extends AbstractQueue
         }
     }
 
-    private function assertDriverIsDelayable()
+    private function assertDriverIsDelayable(): void
     {
         if (!($this->driver instanceof DelayableDriver)) {
             throw new InvalidOperationException('This driver can\'t manage delayed messages');
@@ -92,7 +89,7 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      */
-    public function acknowledge(Envelope $envelope)
+    public function acknowledge(Envelope $envelope): void
     {
         $this->errorIfClosed();
 
@@ -106,18 +103,18 @@ class PersistentQueue extends AbstractQueue
     /**
      * {@inheritdoc}
      *
-     * @param int $duration Number of seconds to keep polling for messages.
+     * @param int $duration number of seconds to keep polling for messages
      */
     public function dequeue($duration = 5)
     {
         $this->errorIfClosed();
 
-        list($serialized, $receipt) = $this->driver->popMessage($this->name, $duration);
+        $driverMessage = $this->driver->popMessage($this->name, $duration);
 
-        if ($serialized) {
-            $envelope = $this->serializer->unserialize($serialized);
+        if ($driverMessage) {
+            $envelope = $this->serializer->unserialize($driverMessage->message);
 
-            $this->receipts->attach($envelope, $receipt);
+            $this->receipts->attach($envelope, $driverMessage->receipt);
 
             return $envelope;
         }
@@ -132,6 +129,6 @@ class PersistentQueue extends AbstractQueue
 
         $messages = $this->driver->peekQueue($this->name, $index, $limit);
 
-        return array_map(array($this->serializer, 'unserialize'), $messages);
+        return array_map([$this->serializer, 'unserialize'], $messages);
     }
 }

@@ -1,24 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Queue;
 
 use Bernard\Envelope;
+use Bernard\Exception\InvalidOperationException;
 use Bernard\Queue\PersistentQueue;
 
 class PersistentQueueTest extends AbstractQueueTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->driver = $this->createMock('Bernard\Driver');
         $this->serializer = $this->createMock('Bernard\Serializer');
     }
 
-    public function testEnqueue()
+    public function testEnqueue(): void
     {
         $envelope = new Envelope($this->createMock('Bernard\Message'));
 
         $this->serializer->expects($this->once())->method('serialize')->with($this->equalTo($envelope))
-            ->will($this->returnValue('serialized message'));
+            ->willReturn('serialized message');
         $this->driver->expects($this->once())->method('pushMessage')
             ->with($this->equalTo('send-newsletter'), $this->equalTo('serialized message'));
 
@@ -26,33 +29,7 @@ class PersistentQueueTest extends AbstractQueueTest
         $queue->enqueue($envelope);
     }
 
-    /**
-     * @expectedException Bernard\Exception\InvalidOperationException
-     * @expectedExceptionMessage This driver can't manage delayed messages
-     */
-    public function testEnqueueDelayedWithNotDelayableDriver()
-    {
-        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
-
-        $queue = $this->createQueue('send-newsletter');
-        $queue->enqueue($envelope);
-    }
-
-    public function testEnqueueDelayed()
-    {
-        $this->driver = $this->createMock('Bernard\DelayableDriver');
-        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
-
-        $this->serializer->expects($this->once())->method('serialize')->with($this->equalTo($envelope))
-            ->will($this->returnValue('serialized message'));
-        $this->driver->expects($this->once())->method('pushMessageWithDelay')
-            ->with($this->equalTo('send-newsletter'), $this->equalTo('serialized message'), $this->equalTo(10));
-
-        $queue = $this->createQueue('send-newsletter');
-        $queue->enqueue($envelope);
-    }
-
-    public function testAcknowledge()
+    public function testAcknowledge(): void
     {
         $envelope = new Envelope($this->createMock('Bernard\Message'));
 
@@ -60,17 +37,17 @@ class PersistentQueueTest extends AbstractQueueTest
             ->with($this->equalTo('send-newsletter'), $this->equalTo('receipt'));
 
         $this->driver->expects($this->once())->method('popMessage')->with($this->equalTo('send-newsletter'))
-            ->will($this->returnValue(array('message', 'receipt')));
+            ->willReturn(new \Bernard\Driver\Message('message', 'receipt'));
 
         $this->serializer->expects($this->once())->method('unserialize')
-            ->will($this->returnValue($envelope));
+            ->willReturn($envelope);
 
         $queue = $this->createQueue('send-newsletter');
         $envelope = $queue->dequeue();
         $queue->acknowledge($envelope);
     }
 
-    public function testAcknowledgeOnlyIfReceipt()
+    public function testAcknowledgeOnlyIfReceipt(): void
     {
         $envelope = new Envelope($this->createMock('Bernard\Message'));
 
@@ -80,46 +57,46 @@ class PersistentQueueTest extends AbstractQueueTest
         $queue->acknowledge($envelope);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $this->driver->expects($this->once())->method('countMessages')->with($this->equalTo('send-newsletter'))
-            ->will($this->returnValue(10));
+            ->willReturn(10);
 
         $queue = $this->createQueue('send-newsletter');
 
         $this->assertEquals(10, $queue->count());
     }
 
-    public function testDequeue()
+    public function testDequeue(): void
     {
         $messageWrapper = new Envelope($this->createMock('Bernard\Message'));
 
         $this->driver->expects($this->at(1))->method('popMessage')->with($this->equalTo('send-newsletter'))
-            ->will($this->returnValue(array('serialized', null)));
+            ->willReturn(new \Bernard\Driver\Message('serialized', null));
 
         $this->driver->expects($this->at(2))->method('popMessage')->with($this->equalTo('send-newsletter'))
-            ->will($this->returnValue(null));
+            ->willReturn(null);
 
         $this->serializer->expects($this->once())->method('unserialize')->with($this->equalTo('serialized'))
-            ->will($this->returnValue($messageWrapper));
+            ->willReturn($messageWrapper);
 
         $queue = $this->createQueue('send-newsletter');
 
         $this->assertSame($messageWrapper, $queue->dequeue());
-        $this->assertInternalType('null', $queue->dequeue());
+        $this->assertNull($queue->dequeue());
     }
 
     /**
      * @dataProvider peekDataProvider
      */
-    public function testPeekDserializesMessages($index, $limit)
+    public function testPeekDserializesMessages($index, $limit): void
     {
         $this->serializer->expects($this->at(0))->method('unserialize')->with($this->equalTo('message1'));
         $this->serializer->expects($this->at(1))->method('unserialize')->with($this->equalTo('message2'));
         $this->serializer->expects($this->at(2))->method('unserialize')->with($this->equalTo('message3'));
 
         $this->driver->expects($this->once())->method('peekQueue')->with($this->equalTo('send-newsletter'), $this->equalTo($index), $this->equalTo($limit))
-            ->will($this->returnValue(array('message1', 'message2', 'message3')));
+            ->willReturn(['message1', 'message2', 'message3']);
 
         $queue = $this->createQueue('send-newsletter');
         $queue->peek($index, $limit);
@@ -128,22 +105,47 @@ class PersistentQueueTest extends AbstractQueueTest
     public function dataClosedMethods()
     {
         $methods = parent::dataClosedMethods();
-        $methods[] = array('register', array());
+        $methods[] = ['register', []];
 
         return $methods;
     }
 
     public function peekDataProvider()
     {
-        return array(
-            array(0, 20),
-            array(1, 10),
-            array(20, 100),
-        );
+        return [
+            [0, 20],
+            [1, 10],
+            [20, 100],
+        ];
     }
 
     protected function createQueue($name)
     {
         return new PersistentQueue($name, $this->driver, $this->serializer);
+    }
+
+    public function testEnqueueDelayedWithNotDelayableDriver(): void
+    {
+        $this->expectException(InvalidOperationException::class);
+        $this->expectExceptionMessage('This driver can\'t manage delayed messages');
+
+        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
+
+        $queue = $this->createQueue('send-newsletter');
+        $queue->enqueue($envelope);
+    }
+
+    public function testEnqueueDelayed(): void
+    {
+        $this->driver = $this->createMock('Bernard\DelayableDriver');
+        $envelope = new Envelope($this->createMock('Bernard\Message'), 10);
+
+        $this->serializer->expects($this->once())->method('serialize')->with($this->equalTo($envelope))
+            ->willReturn($this->returnValue('serialized message'));
+        $this->driver->expects($this->once())->method('pushMessageWithDelay')
+            ->with($this->equalTo('send-newsletter'), $this->equalTo('serialized message'), $this->equalTo(10));
+
+        $queue = $this->createQueue('send-newsletter');
+        $queue->enqueue($envelope);
     }
 }

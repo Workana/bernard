@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Normalizer;
 
 use Assert\Assertion;
+use Assert\AssertionFailedException;
 use Bernard\Message\PlainMessage;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-/**
- * @package Bernard
- */
-class PlainMessageNormalizer implements NormalizerInterface, DenormalizerInterface
+final class PlainMessageNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
      * {@inheritdoc}
@@ -28,9 +29,13 @@ class PlainMessageNormalizer implements NormalizerInterface, DenormalizerInterfa
      */
     public function denormalize($data, $class, $format = null, array $context = [])
     {
-        Assertion::notEmptyKey($data, 'name');
-        Assertion::keyExists($data, 'arguments');
-        Assertion::isArray($data['arguments']);
+        try {
+            Assertion::notEmptyKey($data, 'name');
+            Assertion::keyExists($data, 'arguments');
+            Assertion::isArray($data['arguments']);
+        } catch (AssertionFailedException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        }
 
         return new PlainMessage($data['name'], $data['arguments']);
     }
@@ -40,7 +45,7 @@ class PlainMessageNormalizer implements NormalizerInterface, DenormalizerInterfa
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return $type === 'Bernard\Message\PlainMessage';
+        return $type === PlainMessage::class;
     }
 
     /**

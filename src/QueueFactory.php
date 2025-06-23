@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard;
 
 /**
  * Knows how to create queues and retrieve them from the used connection.
  * Every queue it creates is saved locally.
- *
- * @package Bernard
  */
 interface QueueFactory extends \Countable
 {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\QueueFactory;
 
 use Bernard\QueueFactory\PersistentFactory;
@@ -9,7 +11,7 @@ class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
     private $factory;
     private $connection;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->connection = $this->getMockBuilder('Bernard\Driver')
             ->disableOriginalConstructor()->getMock();
@@ -17,12 +19,12 @@ class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
         $this->factory = new PersistentFactory($this->connection, $this->createMock('Bernard\Serializer'));
     }
 
-    public function testImplementsQueueFactory()
+    public function testImplementsQueueFactory(): void
     {
         $this->assertInstanceOf('Bernard\QueueFactory', $this->factory);
     }
 
-    public function testItSavesQueueObjects()
+    public function testItSavesQueueObjects(): void
     {
         $this->connection->expects($this->once())->method('createQueue')
             ->with($this->equalTo('send-newsletter'));
@@ -32,11 +34,13 @@ class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($queue, $this->factory->create('send-newsletter'));
     }
 
-    /**
-     * @expectedException \Bernard\Exception\InvalidOperationException
-     */
-    public function testRemoveClosesQueue()
+    public function testRemoveClosesQueue(): void
     {
+        $this->expectException(\Bernard\Exception\InvalidOperationException::class);
+
+        $this->connection->expects($this->once())->method('listQueues')
+            ->willReturn([]);
+
         $queue = $this->factory->create('send-newsletter');
 
         $this->assertTrue($this->factory->exists('send-newsletter'));
@@ -47,25 +51,25 @@ class PersistentFactoryTest extends \PHPUnit\Framework\TestCase
         $queue->peek(0, 1);
     }
 
-    public function testItLazyCreatesQueuesAndAttaches()
+    public function testItLazyCreatesQueuesAndAttaches(): void
     {
         $this->connection->expects($this->once())->method('createQueue')->with($this->equalTo('send-newsletter'));
 
         $this->assertInstanceOf('Bernard\Queue\PersistentQueue', $this->factory->create('send-newsletter'));
     }
 
-    public function testItsCountable()
+    public function testItsCountable(): void
     {
         $this->connection->expects($this->once())->method('listQueues')
-            ->will($this->returnValue(array('failed', 'something', 'queue-ness')));
+            ->willReturn(['failed', 'something', 'queue-ness']);
 
         $this->assertCount(3, $this->factory);
     }
 
-    public function testItGetsAllQueues()
+    public function testItGetsAllQueues(): void
     {
         $this->connection->expects($this->once())->method('listQueues')
-            ->will($this->returnValue(array('queue1', 'queue2')));
+            ->willReturn(['queue1', 'queue2']);
 
         $all = $this->factory->all();
 

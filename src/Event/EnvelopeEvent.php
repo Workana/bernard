@@ -1,22 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Event;
 
 use Bernard\Envelope;
 use Bernard\Queue;
+use Symfony\Contracts\EventDispatcher\Event;
 
-/**
- * @package Bernard
- */
-class EnvelopeEvent extends \Symfony\Component\EventDispatcher\Event
+class EnvelopeEvent extends Event
 {
     protected $envelope;
     protected $queue;
 
-    /**
-     * @param Envelope $envelope
-     * @param Queue    $queue
-     */
     public function __construct(Envelope $envelope, Queue $queue)
     {
         $this->envelope = $envelope;

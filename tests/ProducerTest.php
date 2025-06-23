@@ -1,28 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests;
 
-use Bernard\Message\DefaultMessage;
-use Bernard\Producer;
 use Bernard\Message\PlainMessage;
+use Bernard\Producer;
 use Bernard\QueueFactory\InMemoryFactory;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class ProducerTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->queues = new InMemoryFactory;
-        $this->dispatcher = new EventDispatcher;
+        $this->queues = new InMemoryFactory();
+        $this->dispatcher = new EventDispatcher();
         $this->producer = new Producer($this->queues, $this->dispatcher);
     }
 
-    public function testDispatchesEvent()
+    public function testDispatchesEvent(): void
     {
-        $args = array();
+        $args = [];
 
-        $this->dispatcher->addListener('bernard.produce', function ($event) use (&$args) {
-            $args = array('envelope' => $event->getEnvelope(), 'queue' => $event->getQueue());
+        $this->dispatcher->addListener('bernard.produce', function ($event) use (&$args): void {
+            $args = ['envelope' => $event->getEnvelope(), 'queue' => $event->getQueue()];
         });
 
         $message = new PlainMessage('Message');
@@ -33,7 +34,7 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($this->queues->create('my-queue'), $args['queue']);
     }
 
-    public function testItDelegatesMessagesToQueue()
+    public function testItDelegatesMessagesToQueue(): void
     {
         $message = new PlainMessage('SendNewsletter');
 
@@ -44,21 +45,20 @@ class ProducerTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($message, $envelope->getMessage());
     }
 
-    public function testWithDelay()
+    public function testItUsesGivenQueueName(): void
     {
-        $message = new DefaultMessage('SendNewsletter');
+        $message = new PlainMessage('SendNewsletter');
 
-        $this->producer->produce($message, null, 10);
+        $this->producer->produce($message, 'something-else');
 
-        $envelope = $this->queues->create('send-newsletter')->dequeue();
+        $envelope = $this->queues->create('something-else')->dequeue();
 
-        $this->assertTrue($envelope->isDelayed());
-        $this->assertEquals(10, $envelope->getDelay());
+        $this->assertSame($message, $envelope->getMessage());
     }
 
-    public function testItUsesGivenQueueName()
+    public function testWithDelay(): void
     {
-        $message = new DefaultMessage('SendNewsletter');
+        $message = new PlainMessage('SendNewsletter');
 
         $this->producer->produce($message, null, 10);
 

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Tests\Event;
 
+use Bernard\Envelope;
 use Bernard\Event\RejectEnvelopeEvent;
+use Bernard\Message;
 
 class RejectEnvelopeEventTest extends \PHPUnit\Framework\TestCase
 {
@@ -16,21 +20,22 @@ class RejectEnvelopeEventTest extends \PHPUnit\Framework\TestCase
      */
     private $queue;
 
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->envelope = $this->getMockBuilder('Bernard\Envelope')
-            ->disableOriginalConstructor()->getMock();
+        $message = $this->getMockBuilder(Message::class)->disableOriginalConstructor()
+            ->getMock();
+        $this->envelope = new Envelope($message);
         $this->queue = $this->createMock('Bernard\Queue');
     }
 
-    public function testExtendsEnvelopeEvent()
+    public function testExtendsEnvelopeEvent(): void
     {
         $event = new RejectEnvelopeEvent($this->envelope, $this->queue, new \Exception());
 
         $this->assertInstanceOf('Bernard\Event\EnvelopeEvent', $event);
     }
 
-    public function testRetrieveException()
+    public function testRetrieveException(): void
     {
         $e = new \Exception();
         $event = new RejectEnvelopeEvent($this->envelope, $this->queue, $e);
@@ -41,7 +46,7 @@ class RejectEnvelopeEventTest extends \PHPUnit\Framework\TestCase
     /**
      * @requires PHP 7.0
      */
-    public function testCanContainThrowable()
+    public function testCanContainThrowable(): void
     {
         $error = new \TypeError();
         $event = new RejectEnvelopeEvent($this->envelope, $this->queue, $error);

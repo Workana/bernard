@@ -1,24 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bernard\Driver;
 
 /**
  * For some drivers it gives a performance boost not to query the backend
  * all the time. This is mostly for SQS and IronMQ.
- *
- * @package Bernard
  */
 abstract class AbstractPrefetchDriver implements \Bernard\Driver
 {
-    protected $prefetch;
-    protected $cache;
+    protected ?int $prefetch;
 
-    /**
-     * @param int|null $prefetch
-     */
-    public function __construct($prefetch = null)
+    protected PrefetchMessageCache $cache;
+
+    public function __construct(?int $prefetch = null)
     {
-        $this->prefetch = $prefetch ? (integer) $prefetch : 2;
+        $this->prefetch = $prefetch ?? 2;
         $this->cache = new PrefetchMessageCache();
     }
 }
